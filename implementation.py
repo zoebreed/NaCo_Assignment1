@@ -30,6 +30,9 @@ class GeneticAlgorithm:
             The maximum number objective function evaluations
             the GA is allowed to do when solving a problem.
 
+        M: int
+            The number of individuals in set/array
+
         Notes
         -----
         *   You can add more parameters to this constructor, which are specific to
@@ -37,6 +40,8 @@ class GeneticAlgorithm:
         """
 
         self.budget = budget
+
+        self.M = 1000 # Constant for now ("all of the parameters you use should be modifyable by the user")
 
     def __call__(self, problem: ioh.problem.Integer) -> ioh.IntegerSolution:
         """Run the GA on a given problem instance.
@@ -59,15 +64,42 @@ class GeneticAlgorithm:
             class.
         """
 
-        ### Random Search ###
+        x = self.generate_population(n=problem.meta_data.n_variables)
+
         for evaluation in range(self.budget):
-            # Generate a random solution
-            x = random.choices((0, 1), k=problem.meta_data.n_variables)
-            # Call the problem
-            y = problem(x)
-        ### Random Search ###
+            # Do crossover
+
+            # Do mutation
+
+            # Calculate fitness
+
+            # Check if termination criteria is satisfied
+
+            # Do selection (-> new population)
+
 
         return problem.state.current_best
+
+    def generate_population(self, n):
+        """Generates a randomly initialized population
+
+        Parameters
+        ----------
+        n: int
+            The dimensionality of the search space
+
+        Notes
+        -----
+        *   A solution candidate set is created, consisting of M number of solution
+            candidates of the form: solution candidate x_i = (x_1, x_2, ..., x_n) with
+            i ∈ {1 . . . M}, which are all initialized randomly.
+        """
+
+        x = []
+        for i in range(self.M):
+            x.append(random.choices((0, 1), n))
+
+        return x
 
 
 def test_algorithm(dimension, instance=1):
