@@ -78,4 +78,4 @@ def randomSearch(problem):
 if __name__ == "__main__":
     for i in range(1, 11):
         problem = OneMaxImage(i)
-        one_plus_one_ea(problem)
+        randomSearch(problem)
