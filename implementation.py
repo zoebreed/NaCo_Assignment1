@@ -150,17 +150,16 @@ class GeneticAlgorithm:
 
 
     def mutation(self):
-        
-        #punt mutation
-        
-        #switch to bits
-        
-        #move one bit to different spot
-        return
+        m = random.randint(0,2)
+        if m == 0: #punt mutation
+          return  
+        elif m == 1: #switch two bits
+            return
+        else: #move one bit to different spot
+            return
+    return
     
     
-
-
 def test_algorithm(dimension, instance=1):
     """A function to test if your implementation solves a OneMax problem.
 
