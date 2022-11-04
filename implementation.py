@@ -14,6 +14,7 @@ You are encouraged to use a virtual environment. Install the required dependenci
 
 import random
 import shutil
+import numpy as np
 
 import ioh
 
@@ -64,9 +65,22 @@ class GeneticAlgorithm:
             class.
         """
 
+        print(problem.log_info)
+        # print(problem.meta_data)
+        # print(problem.state)
+        # print("optimum:",type(problem.optimum), problem.optimum.y)
+        # print("n_variables", problem.meta_data.n_variables)
         x = self.generate_population(n=problem.meta_data.n_variables)
 
-        for evaluation in range(self.budget):
+        self.calculate_fitness(x, problem)
+
+        # for evaluation in range(self.budget):
+            #Create initial pop
+            
+            #Calculate fitness
+
+            #Select individual
+
             # Do crossover
 
             # Do mutation
@@ -79,6 +93,16 @@ class GeneticAlgorithm:
 
 
         return problem.state.current_best
+
+
+    def calculate_fitness(self, x, problem):
+        for xi in x:
+                yi = problem(xi)
+                fi = yi / float(problem.optimum.y)
+                print(yi, xi, fi)
+        
+        return
+
 
     def generate_population(self, n):
         """Generates a randomly initialized population
@@ -96,10 +120,12 @@ class GeneticAlgorithm:
         """
 
         x = []
-        for i in range(self.M):
-            x.append(random.choices((0, 1), n))
+        for _ in range(self.M):
+            x.append(np.random.randint(0, 2, n))
 
         return x
+
+    
         
     def select_individual(self):
         """Implements Roulette Wheel selection of individuals based on their fitness
@@ -139,12 +165,12 @@ class GeneticAlgorithm:
         -----
         *   
         """
-        chance = random.randint(0,1)
-        parent1 = random.randint(1, len(p1))
-        parent2 = random.randint(1, len(p2))
-        p1a = p1[0:parent1]
-        p2b = p2[parent2:-1]
-        child = dict()
+        # chance = random.randint(0,1)
+        split1 = random.randint(1, len(p1))
+        split2 = random.randint(1, len(p2))
+        p1a = p1[0:split1]
+        p2b = p2[split2:-1]
+        child = dict() #wil je dit dict of list?
         child = p1a + p2b
         return child
 
@@ -157,7 +183,6 @@ class GeneticAlgorithm:
             return
         else: #move one bit to different spot
             return
-    return
     
     
 def test_algorithm(dimension, instance=1):
