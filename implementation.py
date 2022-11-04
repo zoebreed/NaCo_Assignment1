@@ -68,40 +68,47 @@ class GeneticAlgorithm:
         print(problem.log_info)
         # print(problem.meta_data)
         # print(problem.state)
-        # print("optimum:",type(problem.optimum), problem.optimum.y)
+        # print("optimum:",(problem.optimum), problem.optimum.y)
         # print("n_variables", problem.meta_data.n_variables)
         x = self.generate_population(n=problem.meta_data.n_variables)
 
-        self.calculate_fitness(x, problem)
+        fitnesses = self.calculate_fitness(x, problem)
+
+        self.select_individual(fitnesses, x)
 
         # for evaluation in range(self.budget):
-            #Create initial pop
+            #Create initial pop  --> check
             
-            #Calculate fitness
+            #Calculate fitness --> check 
 
-            #Select individual
-
-            # Do crossover
-
-            # Do mutation
-
-            # Calculate fitness
+            #Generate new population
+                # Select 2 individuals --> check nu nog random
+                # Crossover
+                # Mutate
 
             # Check if termination criteria is satisfied
 
             # Do selection (-> new population)
 
 
+            # for i in range(population_size):
+            # population.append(first_generation(toppings))
+            # # population.append(random.choices(all_ingredients, k=num_ingredients))# if initial population created from inspiring set 
+            # population = sorted(population, reverse = True, key = lambda r: r[-1])
+            # population = initialize_population(population)
+
+            # max_fitnesses, min_fitnesses, mean_fitnesses = [], [], []
+            # terminated = False
+
+            # for i in range(num_generations):
+            # if not terminated:
+            #     R = generate_recipes(population_size, population)
+            #     population = select_population(population, R)
+            #     all_fitnesses = [(population[i][-1]) for i in range(population_size)
+
+
+
         return problem.state.current_best
-
-
-    def calculate_fitness(self, x, problem):
-        for xi in x:
-                yi = problem(xi)
-                fi = yi / float(problem.optimum.y)
-                print(yi, xi, fi)
-        
-        return
 
 
     def generate_population(self, n):
@@ -122,12 +129,21 @@ class GeneticAlgorithm:
         x = []
         for _ in range(self.M):
             x.append(np.random.randint(0, 2, n))
-
         return x
 
-    
+    def calculate_fitness(self, x, problem):
+        fitnesses = []
+        for xi in x:
+                yi = problem(xi)
+                fi = yi #/ float(problem.optimum.y)
+                # print(yi, xi, fi)
+                fitnesses.append(fi)
         
-    def select_individual(self):
+        return fitnesses
+
+
+        
+    def select_individual(self, fitnesses, x):
         """Implements Roulette Wheel selection of individuals based on their fitness
 
         Parameters
@@ -139,12 +155,20 @@ class GeneticAlgorithm:
         -----
         *   
         """
-        #sum_fitness = 
+        # x = sorted()
+        # sum_fitness = sum(fitnesses)
+        # print(f"sum fitnesses: {sum_fitness}")
         # f = random.randint(0, int(sum_fitness))
-        # for individu in self.M:
-        #     if f < fitness:
-        #         return individu
-        # return 
+        # print(f"f: {f}")
+        # for i in range(self.M):
+        #     if f < fitnesses[i]:
+        #         print(f"chosen one: {x[i]}")
+        #         return x[i]
+            # f -= fitnesses[i]
+
+        selected = x[random.randint(0, self.M - 1)]
+        print(f"selected: {selected}")
+        return selected
         
     def crossover(self, p1, p2):
         """Implements the crossover fuction. Takes two parents and combines them by choosing a point 
@@ -175,11 +199,14 @@ class GeneticAlgorithm:
         return child
 
 
-    def mutation(self):
+    def mutation(self, n):
         m = random.randint(0,2)
         if m == 0: #punt mutation
-          return  
+            j = random.randint(0, n - 1)
+            self[j] = 1 - self[j]
+            return  
         elif m == 1: #switch two bits
+            # j, k = random.randint(0, )
             return
         else: #move one bit to different spot
             return
