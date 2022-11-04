@@ -100,6 +100,65 @@ class GeneticAlgorithm:
             x.append(random.choices((0, 1), n))
 
         return x
+        
+    def select_individual(self):
+        """Implements Roulette Wheel selection of individuals based on their fitness
+
+        Parameters
+        ----------
+        n: int
+         The dimensionality of the search space
+
+        Notes
+        -----
+        *   
+        """
+        #sum_fitness = 
+        # f = random.randint(0, int(sum_fitness))
+        # for individu in self.M:
+        #     if f < fitness:
+        #         return individu
+        # return 
+        
+    def crossover(self, p1, p2):
+        """Implements the crossover fuction. Takes two parents and combines them by choosing a point 
+        on each genotype (bitstring) to split each list intwo two, and joing the first sublist from 
+        one genotype with the second sublist of the second genotype.
+        
+
+        Parameters
+        ----------
+        n: int
+         The dimensionality of the search space
+        p1: list
+          genotype 1
+        p2: list 
+          genotype 2
+
+        Notes
+        -----
+        *   
+        """
+        chance = random.randint(0,1)
+        parent1 = random.randint(1, len(p1))
+        parent2 = random.randint(1, len(p2))
+        p1a = p1[0:parent1]
+        p2b = p2[parent2:-1]
+        child = dict()
+        child = p1a + p2b
+        return child
+
+
+    def mutation(self):
+        
+        #punt mutation
+        
+        #switch to bits
+        
+        #move one bit to different spot
+        return
+    
+    
 
 
 def test_algorithm(dimension, instance=1):
