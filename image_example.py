@@ -9,7 +9,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import ioh
-
+from implementation import GeneticAlgorithm
 class OneMaxImage(ioh.problem.Integer):
     def __init__(self, instance=1):
         instances = os.listdir("images")
@@ -79,3 +79,5 @@ if __name__ == "__main__":
     for i in range(1, 11):
         problem = OneMaxImage(i)
         randomSearch(problem)
+        # ga = GeneticAlgorithm(100 * 5e3)
+        # ga(problem)
