@@ -1,5 +1,7 @@
 """NACO assignment 22/23.
 
+By Björn Keyser, Jimmy Oei, and Zoë Breed
+
 This file contains the skeleton code required to solve the first part of the 
 assignment for the NACO course 2022. 
 
@@ -45,6 +47,8 @@ class GeneticAlgorithm:
         self.budget = budget
 
         #Je moet ook kunnen aanpassen welke mutatie je doet
+
+        #Wat we nog kunnen toevoegen = offspring siZe
 
         self.pop_size = 1000
 
@@ -143,6 +147,19 @@ class GeneticAlgorithm:
 
 
     def generate_population(self, fitnesses, pop, problem):
+        """ generates a new population
+
+        Parameters
+        ----------
+        #: #
+            ###
+
+        Notes
+        -----
+        *   Sorts the old population and new population based upon their fitness.
+            The upper half of each of the populations are then added together to create a new
+            population. 
+        """
         new_pop = []
         while len(new_pop) < self.pop_size:
             p1 = self.select_individual(fitnesses, pop)
@@ -155,6 +172,19 @@ class GeneticAlgorithm:
         return new_pop, new_fitnesses
         
     def select_population(self, pop, new_pop, fit, new_fit, problem):
+        """ selects new population
+
+        Parameters
+        ----------
+        #: ##
+            ####
+
+        Notes
+        -----
+        *   Sorts the old population and new population based upon their fitness.
+            The upper half of each of the populations are then added together to create a new
+            population. 
+        """
         
         pop_old = [x for _,x in sorted(zip(fit, pop), reverse=True, key=lambda pair: pair[0])]
         pop_new = [x for _,x in sorted(zip(new_fit, new_pop), reverse=True, key=lambda pair: pair[0])]
@@ -185,6 +215,20 @@ class GeneticAlgorithm:
         return pop
 
     def calculate_fitness(self, pop, problem):
+        """ Calculates the fitness of a population
+
+        Parameters
+        ----------
+        problem: ###
+         
+
+        pop: list
+         List containing the population
+
+        Notes
+        -----
+        *   
+        """
         fitnesses = []
         for popi in pop:
                 yi = problem(popi)
@@ -196,16 +240,19 @@ class GeneticAlgorithm:
 
         
     def select_individual(self, fitnesses, pop):
-        """Implements Roulette Wheel selection of individuals based on their fitness
+        """ Implements selection of individu
 
         Parameters
-        ----------
-        n: int
-         The dimensionality of the search space
+        ---------- 
+        fitnesses: list
+         List with all of the fitnesses
+
+        pop: list
+         List containing the population
 
         Notes
         -----
-        *   
+        *   Implements Roulette Wheel selection of individuals based on their fitness
         """
 
         sorted_fitpop = sorted(zip(fitnesses, pop), reverse=True, key=lambda pair: pair[0])
@@ -224,11 +271,8 @@ class GeneticAlgorithm:
         # return selected
         
     def crossover(self, p1, p2):
-        """Implements the crossover fuction. Takes two parents and combines them by choosing a point 
-        on each genotype (bitstring) to split each list intwo two, and joing the first sublist from 
-        one genotype with the second sublist of the second genotype.
+        """Implements the crossover fuction. 
         
-
         Parameters
         ----------
         n: int
@@ -240,7 +284,9 @@ class GeneticAlgorithm:
 
         Notes
         -----
-        *   
+        *   Takes two parents and combines them by choosing a point 
+            on each genotype (bitstring) to split each list intwo two, and joing the first sublist from 
+            one genotype with the second sublist of the second genotype.
         """
         split = random.randint(1, len(p1 -1))
         p1a = p1[0:split]
@@ -250,6 +296,18 @@ class GeneticAlgorithm:
 
 
     def mutation(self, individu):
+        """ Mutates an individu
+
+        Parameters
+        ---------- 
+        individu: ###
+            One bit string
+
+        Notes
+        -----
+        *   The mutation operator changes an individu using 2 different types of mutation.
+            (1) point mutation: by flipping the bit, (2) swapping two bits with eachother.
+        """
         mut = random.randint(0, 1)
 
         if (mut < self.mutation_rate):
