@@ -97,16 +97,10 @@ class GeneticAlgorithm:
     
         for e in range(self.budget - self.pop_size):
             if e % self.pop_size == 0:
-                # print(f"generation: {gen}")
-                # print(f"old sum fitness: {sum(fitnesses)}")
                 new_pop, new_fit = self.generate_population(fitnesses, pop, problem)
                 pop, fitnesses = self.select_population(pop, new_pop, fitnesses, new_fit, problem)
                 # fitnesses = self.calculate_fitness(pop, problem)
-                # print(f"nr of evaluations: {problem.state.evaluations}")
                 gen = gen + 1
-
-                # print(f"best: {problem.state.current_best}")
-                # print(f"new sum fitness: {sum(fitnesses)}")
 
                 if problem.state.current_best.y == problem.optimum.y:
                     # print(f"found")
@@ -151,7 +145,13 @@ class GeneticAlgorithm:
 
         Parameters
         ----------
-        #: #
+        fitnesses: liste
+            List with all of the fitnes values of the population
+        
+        pop:  list
+            List containing the population
+        
+        problem: #
             ###
 
         Notes
@@ -232,20 +232,19 @@ class GeneticAlgorithm:
         fitnesses = []
         for popi in pop:
                 yi = problem(popi)
-                fi = yi #/ float(problem.optimum.y)
+                fi = yi
                 fitnesses.append(fi)
         
         return fitnesses
 
 
-        
     def select_individual(self, fitnesses, pop):
         """ Implements selection of individu
 
         Parameters
         ---------- 
         fitnesses: list
-         List with all of the fitnesses
+         List with all of the fitnes values of the population
 
         pop: list
          List containing the population
@@ -256,8 +255,6 @@ class GeneticAlgorithm:
         """
 
         sorted_fitpop = sorted(zip(fitnesses, pop), reverse=True, key=lambda pair: pair[0])
-        # for fit, popi in sorted_fitpop:
-            # fit, popi = elem
 
         sum_fitness = abs(int(sum(fitnesses)))
         f = random.randint(0, sum_fitness)
@@ -267,8 +264,6 @@ class GeneticAlgorithm:
             f -= abs(fit)
         return sorted_fitpop[-1][1]       
 
-        # selected = pop[random.randint(0, self.pop_size - 1)]
-        # return selected
         
     def crossover(self, p1, p2):
         """Implements the crossover fuction. 
