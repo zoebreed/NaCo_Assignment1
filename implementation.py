@@ -5,20 +5,14 @@ By Björn Keyser, Jimmy Oei, and Zoë Breed
 This file contains the skeleton code required to solve the first part of the 
 assignment for the NACO course 2022. 
 
-You can test your algorithm by using the function `test_algorithm`. For passing A1,
-your GA should be able to pass the checks in this function for dimension=100.
-
 ## Installing requirements
-You are encouraged to use a virtual environment. Install the required dependencies 
-(via the command line) with the following command:
     pip install ioh>=0.3.3
 """
 
 import random
 import shutil
-import numpy as np
-
 import ioh
+import numpy as np
 
 
 class GeneticAlgorithm:
@@ -43,12 +37,11 @@ class GeneticAlgorithm:
         """
         # deze moet je kunnen aanpassen
         #offspring size, crossover rate
-        self.mutation_rate = 0.5
+        self.mutation_rate = 0.7
         self.budget = budget
 
         #Je moet ook kunnen aanpassen welke mutatie je doet
 
-        #Wat we nog kunnen toevoegen = offspring siZe
 
         self.pop_size = 1000
 
@@ -77,23 +70,13 @@ class GeneticAlgorithm:
         # print(problem.meta_data)
         # print(problem.state)
         print("optimum:",(problem.optimum), problem.optimum.y)
-        # print("n_variables", problem.meta_data.n_variables)
 
         #initialize
         pop = self.initialize_population(n=problem.meta_data.n_variables)
 
         #evaluate
         fitnesses = self.calculate_fitness(pop, problem)
-
-        #terminate if optimum reached or budget exceeded
-        terminated = False
         gen = 1
-
-        #budget = 50k * dim
-                #= 10 bits -> 50000 problem() calls
-                # pop_size = 1000
-                # -> 50 generations
-
     
         for e in range(self.budget - self.pop_size):
             if e % self.pop_size == 0:
@@ -102,41 +85,12 @@ class GeneticAlgorithm:
                 # fitnesses = self.calculate_fitness(pop, problem)
                 gen = gen + 1
 
+                # if optimum is reached
                 if problem.state.current_best.y == problem.optimum.y:
                     # print(f"found")
                     break
 
         print(f"curr best: {problem.state.current_best}")
-        
-
-        # for evaluation in range(self.budget):
-            #Create initial pop  --> check
-            
-            #Calculate fitness --> check 
-
-            #Generate new population
-                # Select 2 individuals --> check nu nog random
-                # Crossover
-                # Mutate
-
-            # Check if termination criteria is satisfied
-
-            # Do selection (-> new population)
-
-
-            # for i in range(population_size):
-            #   population.append(first_generation(toppings))
-            # population = sorted(population, reverse = True, key = lambda r: r[-1])
-            # population = initialize_population(population)
-
-            # for i in range(num_generations):
-            # if not terminated:
-            #     R = generate_recipes(population_size, population)
-            #     population = select_population(population, R)
-            #     all_fitnesses = [(population[i][-1]) for i in range(population_size)
-
-
-
         return problem.state.current_best
 
 
@@ -162,12 +116,14 @@ class GeneticAlgorithm:
         """
         new_pop = []
         while len(new_pop) < self.pop_size:
+            # create the parents
             p1 = self.select_individual(fitnesses, pop)
             p2 = self.select_individual(fitnesses, pop)
+            # apply genetic operators
             child = self.crossover(p1, p2)
-            self.mutation(child)
+            child = self.mutation(child) 
             new_pop.append(child)
-
+        #evaluation
         new_fitnesses = self.calculate_fitness(new_pop, problem)
         return new_pop, new_fitnesses
         
@@ -185,9 +141,10 @@ class GeneticAlgorithm:
             The upper half of each of the populations are then added together to create a new
             population. 
         """
-        
+        # sort the populations based upon fitness
         pop_old = [x for _,x in sorted(zip(fit, pop), reverse=True, key=lambda pair: pair[0])]
         pop_new = [x for _,x in sorted(zip(new_fit, new_pop), reverse=True, key=lambda pair: pair[0])]
+        # create new population with best of both
         pop = pop_old[0:len(pop_old)//2] + pop_new[0:len(pop_new)//2]
         fitnesses = self.calculate_fitness(pop, problem)
 
@@ -210,6 +167,7 @@ class GeneticAlgorithm:
         """
 
         pop = []
+        # create random population of bitstrings
         for _ in range(self.pop_size):
             pop.append(np.random.randint(0, 2, n))
         return pop
@@ -253,9 +211,9 @@ class GeneticAlgorithm:
         -----
         *   Implements Roulette Wheel selection of individuals based on their fitness
         """
-
+        # sort the individual based upon fitness
         sorted_fitpop = sorted(zip(fitnesses, pop), reverse=True, key=lambda pair: pair[0])
-
+        
         sum_fitness = abs(int(sum(fitnesses)))
         f = random.randint(0, sum_fitness)
         for fit, popi in sorted_fitpop:
@@ -280,9 +238,10 @@ class GeneticAlgorithm:
         Notes
         -----
         *   Takes two parents and combines them by choosing a point 
-            on each genotype (bitstring) to split each list intwo two, and joing the first sublist from 
+            on each genotype (bitstring) to split each list in two two, and joing the first sublist from 
             one genotype with the second sublist of the second genotype.
         """
+        # create random splicing point
         split = random.randint(1, len(p1 -1))
         p1a = p1[0:split]
         p2b = p2[split:]
@@ -332,10 +291,10 @@ class GeneticAlgorithm:
             #     for i in range (k-j):
             #       individu[]
 
-        return
+        return individu
     
     
-def test_algorithm(dimension, instance=9):
+def test_algorithm(dimension, instance=1):
     """A function to test if your implementation solves a OneMax problem.
 
     Parameters
