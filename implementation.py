@@ -27,23 +27,39 @@ class GeneticAlgorithm:
             The maximum number objective function evaluations
             the GA is allowed to do when solving a problem.
 
-        M: int
+        pop_size: int
             The number of individuals in set/array
+
+        mating_selection: def
+            Function containing the modal operator for mating_selection.
+
+        crossover: def
+            Function containing the modal operator for crossover.
+
+        mutation: def
+            Function containing the modal operator for mutation.
+
+        environmental_selection: def
+            Function containing the modal operator for environmental_selection.
 
         Notes
         -----
         *   You can add more parameters to this constructor, which are specific to
             the GA or one of the (to be implemented) operators, such as a mutation rate.
         """
-        # deze moet je kunnen aanpassen
-        #offspring size, crossover rate
-        self.mutation_rate = 0.7
         self.budget = budget
-
-        #Je moet ook kunnen aanpassen welke mutatie je doet
-
-
         self.pop_size = 1000
+
+        # deze moet je kunnen aanpassen
+        # offspring size, crossover rate
+        self.mutation_rate = 0.7
+        self.tournament_size = 2
+
+        # Variables containing the modal operator the GA will use
+        self.mating_selection = self.mat_selection_tournament
+        self.crossover = self.crossover_single_point
+        self.mutation = self.mutation_point
+        self.environmental_selection = self.env_selection_best_half
 
     def __call__(self, problem: ioh.problem.Integer) -> ioh.IntegerSolution:
         """Run the GA on a given problem instance.
@@ -56,101 +72,36 @@ class GeneticAlgorithm:
 
         Notes
         -----
-        *   This is the main body of you GA. You should implement all the logic
-            for this search algorithm in this method. This does not mean that all
-            the code needs to be in this method as one big block of code, you can
-            use different methods you implement yourself.
-
-        *   For now there is a random search process implemented here, which
-            is a placeholder, and just to show you how to call the problem
-            class.
+        *   This is the main body of the GA.
         """
 
-        # print(problem.log_info)
-        # print(problem.meta_data)
-        # print(problem.state)
         print("optimum:",(problem.optimum), problem.optimum.y)
 
-        #initialize
+        # initialize
         pop = self.initialize_population(n=problem.meta_data.n_variables)
 
-        #evaluate
-        fitnesses = self.calculate_fitness(pop, problem)
+        # first evaluation
+        fit = self.calculate_fitness(pop, problem)
         gen = 1
     
         for e in range(self.budget - self.pop_size):
             if e % self.pop_size == 0:
-                new_pop, new_fit = self.generate_population(fitnesses, pop, problem)
-                pop, fitnesses = self.select_population(pop, new_pop, fitnesses, new_fit, problem)
-                # fitnesses = self.calculate_fitness(pop, problem)
+                # Generates a new population with GA operators
+                new_pop = self.generate_population(fit, pop)
+                new_fit = self.calculate_fitness(pop, problem)
+
+                # Environmental selection
+                pop = self.environmental_selection(pop, new_pop, fit, new_fit)
+                fit = self.calculate_fitness(pop, problem)
                 gen = gen + 1
 
-                # if optimum is reached
+                # Termination criterion
                 if problem.state.current_best.y == problem.optimum.y:
-                    # print(f"found")
                     break
 
         print(f"curr best: {problem.state.current_best}")
         return problem.state.current_best
 
-
-    def generate_population(self, fitnesses, pop, problem):
-        """ generates a new population
-
-        Parameters
-        ----------
-        fitnesses: liste
-            List with all of the fitnes values of the population
-        
-        pop:  list
-            List containing the population
-        
-        problem: #
-            ###
-
-        Notes
-        -----
-        *   Sorts the old population and new population based upon their fitness.
-            The upper half of each of the populations are then added together to create a new
-            population. 
-        """
-        new_pop = []
-        while len(new_pop) < self.pop_size:
-            # create the parents
-            p1 = self.select_individual(fitnesses, pop)
-            p2 = self.select_individual(fitnesses, pop)
-            # apply genetic operators
-            child = self.crossover(p1, p2)
-            child = self.mutation(child) 
-            new_pop.append(child)
-        #evaluation
-        new_fitnesses = self.calculate_fitness(new_pop, problem)
-        return new_pop, new_fitnesses
-        
-    def select_population(self, pop, new_pop, fit, new_fit, problem):
-        """ selects new population
-
-        Parameters
-        ----------
-        #: ##
-            ####
-
-        Notes
-        -----
-        *   Sorts the old population and new population based upon their fitness.
-            The upper half of each of the populations are then added together to create a new
-            population. 
-        """
-        # sort the populations based upon fitness
-        pop_old = [x for _,x in sorted(zip(fit, pop), reverse=True, key=lambda pair: pair[0])]
-        pop_new = [x for _,x in sorted(zip(new_fit, new_pop), reverse=True, key=lambda pair: pair[0])]
-        # create new population with best of both
-        pop = pop_old[0:len(pop_old)//2] + pop_new[0:len(pop_new)//2]
-        fitnesses = self.calculate_fitness(pop, problem)
-
-        return pop, fitnesses
-       
-        
     def initialize_population(self, n):
         """Generates a randomly initialized population
 
@@ -167,131 +118,239 @@ class GeneticAlgorithm:
         """
 
         pop = []
-        # create random population of bitstrings
         for _ in range(self.pop_size):
             pop.append(np.random.randint(0, 2, n))
+
         return pop
 
-    def calculate_fitness(self, pop, problem):
+    def generate_population(self, fit, pop):
+        """ generates a new population
+
+        Parameters
+        ----------
+        fit: list
+            List with all of the fitness values of the population
+        
+        pop: list
+            List containing the population
+
+        Notes
+        -----
+        *   Creates a new population out of the current population pop
+            using the modular operators for mating selection, crossover
+            and mutation. The function returns this new population.
+        """
+        new_pop = []
+        while len(new_pop) < self.pop_size:
+            # select the parents
+            p1 = self.mating_selection(fit, pop)
+            p2 = self.mating_selection(fit, pop)
+
+            # crossover
+            child = self.crossover(p1, p2)
+
+            # mutation
+            mut = random.randint(0, 1)
+            if mut < self.mutation_rate:
+                child = self.mutation(child)
+            new_pop.append(child)
+
+        return new_pop
+
+    @staticmethod
+    def calculate_fitness(pop, problem):
         """ Calculates the fitness of a population
 
         Parameters
         ----------
-        problem: ###
-         
-
         pop: list
-         List containing the population
+            List containing the population
+
+        problem: ioh.problem.Integer
+            An integer problem, from the ioh package.
 
         Notes
         -----
-        *   
+        *   Calculates the fitness of each individual in the population
+            by calling the problem with it and returns a list of all
+            the fitnesses.
         """
-        fitnesses = []
-        for popi in pop:
-                yi = problem(popi)
-                fi = yi
-                fitnesses.append(fi)
-        
-        return fitnesses
+        fit = []
+        for gene in pop:
+            fitness = problem(gene)
+            fit.append(fitness)
 
+        return fit
 
-    def select_individual(self, fitnesses, pop):
-        """ Implements selection of individu
-
+    """
+    Mating selection modal operators
         Parameters
-        ---------- 
-        fitnesses: list
+        ----------
+        fit: list
          List with all of the fitnes values of the population
 
         pop: list
          List containing the population
+    
+        Returns
+        -------
+        A gene that is selected out of the population
+    """
+    @staticmethod
+    def mat_selection_roulette_wheel(fit, pop):
+        """ Mating selection: roulette wheel
 
         Notes
         -----
-        *   Implements Roulette Wheel selection of individuals based on their fitness
+        *   Implements Roulette Wheel selection
         """
-        # sort the individual based upon fitness
-        sorted_fitpop = sorted(zip(fitnesses, pop), reverse=True, key=lambda pair: pair[0])
-        
-        sum_fitness = abs(int(sum(fitnesses)))
-        f = random.randint(0, sum_fitness)
-        for fit, popi in sorted_fitpop:
-            if f < abs(fit):
-                return popi
-            f -= abs(fit)
-        return sorted_fitpop[-1][1]       
+        # sort the individual based on fitness
+        sorted_fitpop = sorted(zip(fit, pop), reverse=True, key=lambda pair: pair[0])
 
-        
-    def crossover(self, p1, p2):
-        """Implements the crossover fuction. 
-        
+        sum_fitness = abs(int(sum(fit)))
+        f = random.randint(0, sum_fitness)
+        for fitness, gene in sorted_fitpop:
+            if f < abs(fitness):
+                return gene
+            f -= abs(fitness)
+        return sorted_fitpop[-1][1]
+
+    def mat_selection_tournament(self, fit, pop):
+        """ Mating selection: tournament selection
+
+        Notes
+        -----
+        *   Implements tournament selection, where tournament_size is how
+            many genes are randomly selected to include in the tournament.
+        """
+        # randomly select tournament_size many genes from population
+        genes = random.sample(list(zip(fit, pop)), k=self.tournament_size)
+        # sort it to select the gene with the highest fitness
+        sorted_genes = sorted(genes, reverse=True, key=lambda pair: pair[0])
+        return sorted_genes[0][1]
+
+    """
+    Crossover modal operators
         Parameters
         ----------
-        n: int
-         The dimensionality of the search space
         p1: list
           genotype 1
-        p2: list 
+          
+        p2: list
           genotype 2
+          
+        Returns
+        -------
+        A child genotype created from the parents p1 and p2
+    """
+    @staticmethod
+    def crossover_single_point(p1, p2):
+        """ Crossover: single point
 
         Notes
         -----
-        *   Takes two parents and combines them by choosing a point 
-            on each genotype (bitstring) to split each list in two two, and joing the first sublist from 
-            one genotype with the second sublist of the second genotype.
+        *   Takes two parents and combines them by choosing a point
+            on each genotype (bitstring) to split each list in two two,
+            and joining the first sublist from one genotype with the second
+            sublist of the second genotype.
         """
         # create random splicing point
-        split = random.randint(1, len(p1 -1))
+        split = random.randint(1, len(p1 - 1))
         p1a = p1[0:split]
         p2b = p2[split:]
         child = np.append(p1a, p2b)
         return child
 
-
-    def mutation(self, individu):
-        """ Mutates an individu
-
+    """
+    Mutation modal operators
         Parameters
         ---------- 
-        individu: ###
+        gene: list
             One bit string
+            
+        Returns
+        -------
+        The gene after applying mutation
+    """
+    @staticmethod
+    def mutation_point(gene):
+        """ Mutation: point mutation
 
         Notes
         -----
-        *   The mutation operator changes an individu using 2 different types of mutation.
-            (1) point mutation: by flipping the bit, (2) swapping two bits with eachother.
+        *   Flips one bit in the gene.
         """
-        mut = random.randint(0, 1)
+        n = len(gene)
+        j = random.randint(0, n - 1)
+        gene[j] = 1 - gene[j]
+        return gene
 
-        if (mut < self.mutation_rate):
-            m = random.randint(0, 1)
-            n = len(individu)
-            if m == 0: #point mutation
-                j = random.randint(0, n - 1)
-                individu[j] = 1 - individu[j]
-            elif m == 1: #swap mutation
-                j = random.randint(0, n - 1)
-                k = random.randint(0, n - 1)
-                tmp = individu[j]
-                individu[j] = individu[k]
-                individu[k] = tmp
-            ##insert mutation (pick two bits at random, move the second to follow the first
-            # shifting the rest)
-            # elif m == 2: 
-            #     j = random.randint(0, n - 2)
-            #     k = random.randint(j, n - 1)
-            #     individu[k] = individu[j+1]
-            #     return
+    @staticmethod
+    def mutation_swap(gene):
+        """ Mutation: swap mutation
 
-            ## inversion mutation (pick to bits at random and invert substring between them)
-            # else:
-            #     j = random.randint(0, n - 2)
-            #     k = random.randint(j, n - 1)
-            #     for i in range (k-j):
-            #       individu[]
+        Notes
+        -----
+        *   Swaps two bits in the gene with each other.
+        """
+        n = len(gene)
+        j = random.randint(0, n - 1)
+        k = random.randint(0, n - 1)
+        tmp = gene[j]
+        gene[j] = gene[k]
+        gene[k] = tmp
+        return gene
 
-        return individu
+    ##insert mutation (pick two bits at random, move the second to follow the first
+    # shifting the rest)
+    # elif m == 2:
+    #     j = random.randint(0, n - 2)
+    #     k = random.randint(j, n - 1)
+    #     individu[k] = individu[j+1]
+    #     return
+
+    ## inversion mutation (pick to bits at random and invert substring between them)
+    # else:
+    #     j = random.randint(0, n - 2)
+    #     k = random.randint(j, n - 1)
+    #     for i in range (k-j):
+    #       individu[]
+
+    """
+    Environmental selection modal operators
+        Parameters
+        ----------
+        new_pop: list
+            List containing the new population
+
+        pop: list
+            List containing the population
+
+        fit: list
+            List with all of the fitness values of the population
+
+        new_fit: list
+            List with all of the fitness values of the new population
+            
+        Returns
+        -------
+        List containing the new population after selecting from pop and new_pop
+    """
+    @staticmethod
+    def env_selection_best_half(pop, new_pop, fit, new_fit):
+        """ Environmental selection: best halves of both
+
+        Notes
+        -----
+        *   Sorts the two populations based on their fitness and selects
+            the top best halves of both to create the new population
+            which is then returned.
+        """
+        # sort the populations based on fitness
+        pop_old = [x for _,x in sorted(zip(fit, pop), reverse=True, key=lambda pair: pair[0])]
+        pop_new = [x for _,x in sorted(zip(new_fit, new_pop), reverse=True, key=lambda pair: pair[0])]
+        # return new population with best fitnesses of both
+        return pop_old[0:len(pop_old)//2] + pop_new[0:len(pop_new)//2]
     
     
 def test_algorithm(dimension, instance=1):
