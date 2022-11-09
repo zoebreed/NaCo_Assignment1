@@ -52,11 +52,11 @@ class GeneticAlgorithm:
 
         self.mutation_rate = 0.7
         self.cross_rate = 0.9
-        self.tournament_size = 128
+        self.tournament_size = 64
        
         # Variables containing the modal operator the GA will use
         self.mating_selection = self.mat_selection_tournament
-        self.crossover = self.crossover_single_point
+        self.crossover = self.crossover_uniform
         self.mutation = self.mutation_point
         self.environmental_selection = self.env_selection_best_of_both
 
@@ -416,7 +416,7 @@ def collect_data(dimension=100, nreps=5):
 
     budget = int(dimension * 5e2)
     suite = ioh.suite.PBO([1, 2], list(range(1, 11)), [dimension])
-    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm1")
+    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm5")
     suite.attach_logger(logger)
 
     for problem in suite:
