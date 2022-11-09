@@ -14,7 +14,6 @@ import shutil
 import ioh
 import numpy as np
 
-
 class GeneticAlgorithm:
     """An implementation of the Genetic Algorithm."""
 
@@ -278,15 +277,14 @@ class GeneticAlgorithm:
 
         Notes
         -----
-        *   Takes two parents and combines them by choosing two points
-            on each genotype (bitstring) to split each list in two two,
-            and joining the first sublist from one genotype with the second
-            sublist of the second genotype.
+        *   Takes two parents and combines them by a 50 procent probility of
+            selecting a gene from the a parent.
         """
-        # create random splicing point
+      
         child = []
  
         for i in range(len(p1)):
+            # probability that decides from which parent the gene will be chosen
             prob = random.randint(0, 1)
             if prob == 0:
                 child.append(p1[i])
@@ -465,7 +463,11 @@ def collect_data(dimension=100, nreps=5):
 
 if __name__ == "__main__":
     # Simple test for development purpose
+<<<<<<< HEAD
     #test_algorithm(10)
+=======
+    # test_algorithm(10)
+>>>>>>> 2033cd6617252763b2325dfb9bd7340cda203b5d
 
     # Test required for A1, your GA should be able to pass this!
     # test_algorithm(100)
