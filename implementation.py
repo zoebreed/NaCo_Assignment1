@@ -57,8 +57,8 @@ class GeneticAlgorithm:
 
        
         # Variables containing the modal operator the GA will use
-        self.mating_selection = self.mat_selection_tournament 
-        self.crossover = self.crossover_uniform
+        self.mating_selection = self.mat_selection_roulette_wheel
+        self.crossover = self.crossover_single_point
         self.mutation = self.mutation_point
         self.environmental_selection = self.env_selection_best_half
 
@@ -386,6 +386,20 @@ class GeneticAlgorithm:
         pop_new = [x for _,x in sorted(zip(new_fit, new_pop), reverse=True, key=lambda pair: pair[0])]
         # return new population with best fitnesses of both
         return pop_old[0:len(pop_old)//2] + pop_new[0:len(pop_new)//2]
+
+    @staticmethod
+    def env_selection_best_of_both(pop, new_pop, fit, new_fit):
+        """ Environmental selection: best genes of both
+        Notes
+        -----
+        *   Returns a population of the best genes of the genes from both pop and new_pop
+        """
+        # sort the populations based on fitness
+        fit.extend(new_fit)
+        pop.extend(new_pop)
+        sorted_pops = [x for _,x in sorted(zip(fit, pop), reverse=True, key=lambda pair: pair[0])]
+        # return new population with best fitnesses of both
+        return sorted_pops[0:len(sorted_pops)//2]
     
     
 def test_algorithm(dimension, instance=1):
@@ -417,7 +431,7 @@ def test_algorithm(dimension, instance=1):
     print(f"OneMax was successfully solved in {dimension}D.\n")
 
 
-def collect_data(dimension=100, nreps=1):
+def collect_data(dimension=100, nreps=5):
     """OneMax + LeadingOnes functions 10 instances.
 
     This function should be used to generate data, for A1.
@@ -433,7 +447,7 @@ def collect_data(dimension=100, nreps=1):
 
     budget = int(dimension * 5e2)
     suite = ioh.suite.PBO([1, 2], list(range(1, 11)), [dimension])
-    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm")
+    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm2")
     suite.attach_logger(logger)
 
     for problem in suite:
