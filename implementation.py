@@ -58,7 +58,7 @@ class GeneticAlgorithm:
         self.mating_selection = self.mat_selection_tournament
         self.crossover = self.crossover_uniform
         self.mutation = self.mutation_point
-        self.environmental_selection = self.env_selection_best_of_both
+        self.environmental_selection = self.env_selection_best_half
 
     def __call__(self, problem: ioh.problem.Integer) -> ioh.IntegerSolution:
         """Run the GA on a given problem instance.
