@@ -47,20 +47,18 @@ class GeneticAlgorithm:
             the GA or one of the (to be implemented) operators, such as a mutation rate.
         """
         self.budget = budget
+
         self.pop_size = 1000
 
-        # deze moet je kunnen aanpassen
-        # offspring size, crossover rate
         self.mutation_rate = 0.7
         self.cross_rate = 0.9
-        self.tournament_size = 2
-
+        self.tournament_size = 128
        
         # Variables containing the modal operator the GA will use
-        self.mating_selection = self.mat_selection_roulette_wheel
+        self.mating_selection = self.mat_selection_tournament
         self.crossover = self.crossover_single_point
         self.mutation = self.mutation_point
-        self.environmental_selection = self.env_selection_best_half
+        self.environmental_selection = self.env_selection_best_of_both
 
     def __call__(self, problem: ioh.problem.Integer) -> ioh.IntegerSolution:
         """Run the GA on a given problem instance.
@@ -75,8 +73,6 @@ class GeneticAlgorithm:
         -----
         *   This is the main body of the GA.
         """
-
-        print("optimum:",(problem.optimum), problem.optimum.y)
 
         # initialize
         pop = self.initialize_population(n=problem.meta_data.n_variables)
@@ -100,7 +96,6 @@ class GeneticAlgorithm:
                 if problem.state.current_best.y == problem.optimum.y:
                     break
 
-        print(f"curr best: {problem.state.current_best}")
         return problem.state.current_best
 
     def initialize_population(self, n):
@@ -264,25 +259,14 @@ class GeneticAlgorithm:
         child = np.append(p1a, p2b)
         return child
 
-    """
-    Mutation modal operators
-        Parameters
-        ---------- 
-        gene: list
-            One bit string
-            
-        Returns
-        -------
-        The gene after applying mutation
-    """
     @staticmethod
     def crossover_uniform(p1, p2):
         """ Crossover: uniform
 
         Notes
         -----
-        *   Takes two parents and combines them by a 50 procent probility of
-            selecting a gene from the a parent.
+        *   Takes two parents and combines them by a 50 percent probability of
+            selecting a gene from one of the parents.
         """
       
         child = []
@@ -335,21 +319,6 @@ class GeneticAlgorithm:
         gene[j] = gene[k]
         gene[k] = tmp
         return gene
-
-    ##insert mutation (pick two bits at random, move the second to follow the first
-    # shifting the rest)
-    # elif m == 2:
-    #     j = random.randint(0, n - 2)
-    #     k = random.randint(j, n - 1)
-    #     individu[k] = individu[j+1]
-    #     return
-
-    ## inversion mutation (pick to bits at random and invert substring between them)
-    # else:
-    #     j = random.randint(0, n - 2)
-    #     k = random.randint(j, n - 1)
-    #     for i in range (k-j):
-    #       individu[]
 
     """
     Environmental selection modal operators
@@ -447,7 +416,7 @@ def collect_data(dimension=100, nreps=5):
 
     budget = int(dimension * 5e2)
     suite = ioh.suite.PBO([1, 2], list(range(1, 11)), [dimension])
-    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm2")
+    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm1")
     suite.attach_logger(logger)
 
     for problem in suite:
