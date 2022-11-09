@@ -53,13 +53,13 @@ class GeneticAlgorithm:
         # deze moet je kunnen aanpassen
         # offspring size, crossover rate
         self.mutation_rate = 0.7
-        self.tournament_size = 2
+        self.tournament_size = 64
         self.crossover_prob = 0.3
         # Variables containing the modal operator the GA will use
-        self.mating_selection = self.mat_selection_tournament 
+        self.mating_selection = self.mat_selection_tournament
         self.crossover = self.crossover_uniform
         self.mutation = self.mutation_point
-        self.environmental_selection = self.env_selection_best_half
+        self.environmental_selection = self.env_selection_best_of_both
 
     def __call__(self, problem: ioh.problem.Integer) -> ioh.IntegerSolution:
         """Run the GA on a given problem instance.
@@ -149,7 +149,7 @@ class GeneticAlgorithm:
             child = self.crossover(p1, p2)
 
             # mutation
-            mut = random.randint(0, 1)
+            mut = random.uniform(0, 1)
             if mut < self.mutation_rate:
                 child = self.mutation(child)
             new_pop.append(child)
@@ -288,7 +288,7 @@ class GeneticAlgorithm:
  
         for i in range(len(p1)):
             prob = random.randint(0, 1)
-            if prob is 0:
+            if prob == 0:
                 child.append(p1[i])
             else: 
                 child.append(p2[i])
@@ -385,6 +385,21 @@ class GeneticAlgorithm:
         pop_new = [x for _,x in sorted(zip(new_fit, new_pop), reverse=True, key=lambda pair: pair[0])]
         # return new population with best fitnesses of both
         return pop_old[0:len(pop_old)//2] + pop_new[0:len(pop_new)//2]
+
+    @staticmethod
+    def env_selection_best_of_both(pop, new_pop, fit, new_fit):
+        """ Environmental selection: best genes of both
+
+        Notes
+        -----
+        *   #
+        """
+        # sort the populations based on fitness
+        fit.extend(new_fit)
+        pop.extend(new_pop)
+        sorted_pops = [x for _,x in sorted(zip(fit, pop), reverse=True, key=lambda pair: pair[0])]
+        # return new population with best fitnesses of both
+        return sorted_pops[0:len(sorted_pops)//2]
     
     
 def test_algorithm(dimension, instance=1):
@@ -416,7 +431,7 @@ def test_algorithm(dimension, instance=1):
     print(f"OneMax was successfully solved in {dimension}D.\n")
 
 
-def collect_data(dimension=100, nreps=1):
+def collect_data(dimension=100, nreps=5):
     """OneMax + LeadingOnes functions 10 instances.
 
     This function should be used to generate data, for A1.
@@ -432,7 +447,7 @@ def collect_data(dimension=100, nreps=1):
 
     budget = int(dimension * 5e2)
     suite = ioh.suite.PBO([1, 2], list(range(1, 11)), [dimension])
-    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm")
+    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm_2")
     suite.attach_logger(logger)
 
     for problem in suite:
@@ -450,10 +465,10 @@ def collect_data(dimension=100, nreps=1):
 
 if __name__ == "__main__":
     # Simple test for development purpose
-    test_algorithm(10)
+    #test_algorithm(10)
 
     # Test required for A1, your GA should be able to pass this!
     # test_algorithm(100)
 
     # If your implementation passes test_algorithm(100)
-    # collect_data(100)
+    collect_data(100)
