@@ -416,7 +416,7 @@ def collect_data(dimension=100, nreps=5):
 
     budget = int(dimension * 5e2)
     suite = ioh.suite.PBO([1, 2], list(range(1, 11)), [dimension])
-    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm5")
+    logger = ioh.logger.Analyzer(algorithm_name="GeneticAlgorithm")
     suite.attach_logger(logger)
 
     for problem in suite:
