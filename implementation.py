@@ -463,11 +463,7 @@ def collect_data(dimension=100, nreps=5):
 
 if __name__ == "__main__":
     # Simple test for development purpose
-<<<<<<< HEAD
     #test_algorithm(10)
-=======
-    # test_algorithm(10)
->>>>>>> 2033cd6617252763b2325dfb9bd7340cda203b5d
 
     # Test required for A1, your GA should be able to pass this!
     # test_algorithm(100)
