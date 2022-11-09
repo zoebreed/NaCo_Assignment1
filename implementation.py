@@ -54,10 +54,10 @@ class GeneticAlgorithm:
         # offspring size, crossover rate
         self.mutation_rate = 0.7
         self.tournament_size = 2
-
+        self.crossover_prob = 0.3
         # Variables containing the modal operator the GA will use
-        self.mating_selection = self.mat_selection_tournament
-        self.crossover = self.crossover_single_point
+        self.mating_selection = self.mat_selection_tournament 
+        self.crossover = self.crossover_uniform
         self.mutation = self.mutation_point
         self.environmental_selection = self.env_selection_best_half
 
@@ -120,7 +120,6 @@ class GeneticAlgorithm:
         pop = []
         for _ in range(self.pop_size):
             pop.append(np.random.randint(0, 2, n))
-
         return pop
 
     def generate_population(self, fit, pop):
@@ -145,7 +144,7 @@ class GeneticAlgorithm:
             # select the parents
             p1 = self.mating_selection(fit, pop)
             p2 = self.mating_selection(fit, pop)
-
+     
             # crossover
             child = self.crossover(p1, p2)
 
@@ -208,7 +207,7 @@ class GeneticAlgorithm:
         sorted_fitpop = sorted(zip(fit, pop), reverse=True, key=lambda pair: pair[0])
 
         sum_fitness = abs(int(sum(fit)))
-        f = random.randint(0, sum_fitness)
+        f = random.randint(0, sum_fitness) 
         for fitness, gene in sorted_fitpop:
             if f < abs(fitness):
                 return gene
@@ -254,6 +253,7 @@ class GeneticAlgorithm:
             and joining the first sublist from one genotype with the second
             sublist of the second genotype.
         """
+
         # create random splicing point
         split = random.randint(1, len(p1 - 1))
         p1a = p1[0:split]
@@ -272,6 +272,40 @@ class GeneticAlgorithm:
         -------
         The gene after applying mutation
     """
+    @staticmethod
+    def crossover_uniform(p1, p2):
+        """ Crossover: uniform
+
+        Notes
+        -----
+        *   Takes two parents and combines them by choosing two points
+            on each genotype (bitstring) to split each list in two two,
+            and joining the first sublist from one genotype with the second
+            sublist of the second genotype.
+        """
+        # create random splicing point
+        child = []
+ 
+        for i in range(len(p1)):
+            prob = random.randint(0, 1)
+            if prob is 0:
+                child.append(p1[i])
+            else: 
+                child.append(p2[i])
+        return child
+
+    """
+    Mutation modal operators
+        Parameters
+        ---------- 
+        gene: list
+            One bit string
+            
+        Returns
+        -------
+        The gene after applying mutation
+    """
+
     @staticmethod
     def mutation_point(gene):
         """ Mutation: point mutation
@@ -416,10 +450,10 @@ def collect_data(dimension=100, nreps=1):
 
 if __name__ == "__main__":
     # Simple test for development purpose
-    # test_algorithm(1)
+    test_algorithm(10)
 
     # Test required for A1, your GA should be able to pass this!
     # test_algorithm(100)
 
     # If your implementation passes test_algorithm(100)
-    collect_data(100)
+    # collect_data(100)
